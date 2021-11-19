@@ -25,13 +25,13 @@ public class NettyChatServer {
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
-            // 2. 服务端引导器
+            // 2. 服务端引导器（用来集成所有的配置）
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             // 3. 设置线程池
             serverBootstrap.group(bossGroup, workerGroup)
                     // 4. 设置ServerSocketChannel的类型
                     .channel(NioServerSocketChannel.class)
-                    // 5. 设置参数
+                    // 5. 设置参数（可选参数）
                     .option(ChannelOption.SO_BACKLOG, 100)
                     // 6. 设置ServerSocketChannel对应的Handler，只能设置一个
                     .handler(new LoggingHandler(LogLevel.INFO))
@@ -60,6 +60,11 @@ public class NettyChatServer {
 
     private static class ChatNettyHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
+        /**
+         * 用于处理客户端连接
+         * @param ctx
+         * @throws Exception
+         */
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             System.out.println("one conn active: " + ctx.channel());
@@ -67,6 +72,12 @@ public class NettyChatServer {
             ChatHolder.join((SocketChannel) ctx.channel());
         }
 
+        /**
+         * 用于读事件
+         * @param ctx
+         * @param byteBuf
+         * @throws Exception
+         */
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) throws Exception {
             byte[] bytes = new byte[byteBuf.readableBytes()];
@@ -81,6 +92,11 @@ public class NettyChatServer {
             }
         }
 
+        /**
+         * 用于断开连接
+         * @param ctx
+         * @throws Exception
+         */
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             System.out.println("one conn inactive: " + ctx.channel());
